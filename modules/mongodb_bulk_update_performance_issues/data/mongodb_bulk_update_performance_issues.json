@@ -1,0 +1,162 @@
+{
+  "name": "mongodb_bulk_update_performance_issues",
+  "description": "This incident type refers to performance issues encountered during bulk updates in MongoDB, a popular NoSQL database management system. Bulk updates involve updating multiple documents in a single operation, which can be resource-intensive and may cause performance degradation if not properly optimized. This incident type requires troubleshooting and optimization to ensure efficient bulk updates without compromising the overall performance of the MongoDB database.",
+  "params": [
+    {
+      "name": "COLLECTION_NAME",
+      "value": ""
+    },
+    {
+      "name": "MONGO_CONFIG_FILE",
+      "value": ""
+    },
+    {
+      "name": "DISK_SPACE_LIMIT",
+      "value": ""
+    },
+    {
+      "name": "MEMORY_LIMIT",
+      "value": ""
+    },
+    {
+      "name": "THRESHOLD_SECONDS",
+      "value": ""
+    },
+    {
+      "name": "CPU_LIMIT",
+      "value": ""
+    },
+    {
+      "name": "MONGO_URI",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## MongoDB bulk update performance issues.\nThis incident type refers to performance issues encountered during bulk updates in MongoDB, a popular NoSQL database management system. Bulk updates involve updating multiple documents in a single operation, which can be resource-intensive and may cause performance degradation if not properly optimized. This incident type requires troubleshooting and optimization to ensure efficient bulk updates without compromising the overall performance of the MongoDB database."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check MongoDB server status"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `systemctl status mongod.service`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check MongoDB server logs for errors"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `tail -f /var/log/mongodb/mongod.log`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Connect to MongoDB instance with the mongo shell"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `mongo ${MONGO_URI}`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the affected collection is indexed"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `mongo ${MONGO_URI} --eval \"db.${COLLECTION_NAME}.getIndexes()\"`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the size of the affected collection"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `mongo ${MONGO_URI} --eval \"db.${COLLECTION_NAME}.stats()\"`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the current oplog size"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `mongo ${MONGO_URI} --eval \"db.oplog.rs.stats()\"`"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if there are any long-running operations"
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `mongo ${MONGO_URI} --eval \"db.currentOp({'op': 'update', 'secs_running': {'$gt': ${THRESHOLD_SECONDS}}})\"`"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Monitor MongoDB server performance metrics in real-time"
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `mongostat`"
+    },
+    {
+      "name": "cell_18",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Review the MongoDB database configuration to ensure that it is optimized for bulk updates. This includes reviewing the system resources, such as CPU, memory, and disk space, and adjusting the configuration parameters accordingly."
+    },
+    {
+      "name": "cell_19",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_mongo_config_update($MONGO_CONFIG_FILE, $DISK_SPACE_LIMIT, $MEMORY_LIMIT, $CPU_LIMIT)"
+    }
+  ]
+}
